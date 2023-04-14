@@ -56,7 +56,7 @@ function App(): JSX.Element {
            Nueva cita
         </Text>
       </Pressable>
-      <Formulario modalVisible= {modalVisible}  /> 
+      <Formulario modalVisible= {modalVisible} setModalVisible={setModalVisible} /> 
     </SafeAreaView>
   );
 }
