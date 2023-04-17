@@ -1,9 +1,16 @@
-import React, {useState} from 'react'
-import { Modal, Text, SafeAreaView, StyleSheet, TextInput, View, ScrollView, Pressable } from 'react-native'
+import React, {useState, useEffect} from 'react';
+import { Modal, Text, SafeAreaView, StyleSheet, TextInput, View, ScrollView, 
+         Pressable, Alert } from 'react-native'; 
 import DatePicker from 'react-native-date-picker';
 
-const Formulario = ({modalVisible,setModalVisible}) => 
+const Formulario = ({modalVisible,
+  setModalVisible, 
+  setPacientes, 
+  pacientes, 
+  pacienteSelected,
+  setPaciente:setPacienteApp}) => 
 {
+   const [id, setId] = useState('');
    const [paciente, setPaciente] = useState('');
    const [propietario, setPropietario] = useState('');
    const [emailPropietario, setEmailPropietario] = useState('');
@@ -11,15 +18,100 @@ const Formulario = ({modalVisible,setModalVisible}) =>
    const [fecha, setFecha] = useState(new Date());
    const [sintomas, setSintomas] = useState('');
 
+  //UseEffect
+   //Siempre tiene una funcion dentro de el que se ejecuta una vez que el componente cambia o cuando el componente esta listo
+   useEffect(()=>{
+     if(Object.keys(pacienteSelected).length > 0) //si existe el objeto y tiene valores se colocan sino se dejan vacios
+     {
+      // console.log('si hay algo')
+      //console.log(pacienteSelected)set
+      setId(pacienteSelected.id)
+      setPaciente(pacienteSelected.paciente)
+      setPropietario(pacienteSelected.propietario)
+      setEmailPropietario(pacienteSelected.emailPropietario)
+      setTelefonoPropietario(pacienteSelected.telefonoPropietario)
+      setFecha(pacienteSelected.fecha)
+      setSintomas(pacienteSelected.sintomas)
+
+      setPacienteApp({})
+      
+     }                   //cada ves que cambia el pacienteSelected, se eejcuta el codigo anterior
+   },[pacienteSelected]) //solo se ejecutara una vez y si se le pasa alguna variable reactiva, solo hasta que esta cambie se hara
+
+   //funcion para el agregado de pacientes
+   const handleNuevaCita = () => 
+   {
+      //console.log('presionaste agregar paciente');
+      // pasamos arreglo con todos los valores del formulario}
+      if([paciente, propietario, emailPropietario, telefonoPropietario, fecha, sintomas].includes('')) //includes revisara si alguno esta vacio 
+      {
+         Alert.alert(
+          'Error',  //titulo de alerta
+          'Todos los campos son obligatorios',  //descripcion de problema
+          //[{text:'Recordame despues'},{text:'Cancelar'}, {text:'OK'}] //puede haber mas botones y el orden de estos cambia dependiendo cuantos botones sean
+         );
+
+         return 
+      }
+
+      const nuevoPaciente = {  //nuevo objeto con la info que ingreso el usuario
+        paciente,
+        propietario,
+        emailPropietario,
+        telefonoPropietario,
+        fecha,
+        sintomas
+     }   
+
+      //Revisar si es un registro nuevo o edicion
+      if(id) //Editado
+      {
+        nuevoPaciente.id = id
+        //No se puede modificar directamente el arreglo actual, se tiene que crear otro para ello
+        const pacientesActualizados = pacientes.map(pacienteState => //para ello comprobamos el id seleccionado a editar
+          pacienteState.id == nuevoPaciente.id ? nuevoPaciente : pacienteState) //map devuelve un nuevo arrreglo
+
+          setPacientes(pacientesActualizados)
+      }
+      else //Nuevo registro 
+      {
+         
+         nuevoPaciente.id = Date.now() //id temporal ya que no hay valores de bd ya que se necesita para la muestra de pacientes en app
+         setPacientes([...pacientes, nuevoPaciente])  //toma una copia de pacientes y le agrega el nuevo paciente en dado caso de que haya
+      }
+
+
+      setModalVisible(!modalVisible); //una vez agregado el nuevo paciente se cierra el modal
+
+      //Se setean los valores en vacios nuevamente para el reseteo del formulario
+      setPaciente('');
+      setPropietario('');
+      setEmailPropietario('');
+      setSintomas('');
+      setTelefonoPropietario('');
+      setFecha(new Date());
+   }
+
   return (
     <Modal animationType='slide' visible={modalVisible}>
         <SafeAreaView style={styles.contenido}>
           <ScrollView>
-            <Text style={styles.titulo}>Nueva {''}
+            <Text style={styles.titulo}> {pacienteSelected.id ? 'Editar' : 'Nueva'} {''}
                 <Text style={styles.tituloBold}>Cita</Text>
             </Text> 
 
-            <Pressable style={styles.btnCancel} onLongPress={()=>setModalVisible(!modalVisible)}>
+            <Pressable style={styles.btnCancel} onLongPress={()=>{
+              setModalVisible(!modalVisible)
+
+              setPacienteApp({});   
+              setPaciente('');
+              setPropietario('');
+              setEmailPropietario('');
+              setSintomas('');
+              setTelefonoPropietario('');
+              setFecha(new Date());
+
+            }}>
                <Text style={styles.btnCancelTexto}>X Cancelar</Text>
             </Pressable>
 
@@ -49,8 +141,8 @@ const Formulario = ({modalVisible,setModalVisible}) =>
                 <Text style={styles.label}>Síntomas</Text>
                 <TextInput  style={[styles.input, styles.inputSintomas]} value={sintomas} onChangeText={setSintomas} placeholder='Síntomas propietario' placeholderTextColor={'#666'} multiline= {true} numberOfLines={4} />
             </View>
-            <Pressable style={styles.btnNuevaCita}>
-               <Text style={styles.btnNuevaCitaTexto}>Agregar paciente</Text>
+            <Pressable style={styles.btnNuevaCita} onPress={handleNuevaCita}>
+               <Text style={styles.btnNuevaCitaTexto}> {pacienteSelected.id ? 'Editar' : 'Agregar'} paciente</Text>
             </Pressable>
           </ScrollView>
         </SafeAreaView>
@@ -115,7 +207,7 @@ const styles = StyleSheet.create({
   },
   btnNuevaCita:{
      marginVertical:50,
-     backgroundColor:'#F59ME0B',
+     backgroundColor:'#F59E0B',
      paddingVertical:15,
      marginHorizontal:30,
      borderRadius:10,

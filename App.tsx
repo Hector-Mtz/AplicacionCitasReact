@@ -7,13 +7,16 @@ import {
  StyleSheet,
  Button,
  Pressable,
- Modal
+ Modal,
+ FlatList,
+ Alert
 } from 'react-native';
 
 //Dependencias
 
 //Componentes
 import Formulario from './src/components/Formulario';
+import Paciente from './src/components/Paciente';
 
 
 type SectionProps = PropsWithChildren<{
@@ -39,6 +42,10 @@ function App(): JSX.Element {
 
   //Los hooks se colocan en la parte superior antes de los componentes
   const [modalVisible, setModalVisible] = useState(false); //es como una variable reactive
+  //se necesita un state para mostrar los clientes
+  const [pacientes, setPacientes] = useState([]);
+  //declaramos variable reactiva para el editado del paciente
+  const [pacienteSelected, setPaciente] = useState({});
 
   const nuevaCitaHandler = () =>
   {
@@ -46,6 +53,28 @@ function App(): JSX.Element {
     setModalVisible(true);
     //onPress evento normal, onPressLong evento donde se mantiene presionado, onPressIn cuando se le da al inicio click, onPressOute cuando se suelta el boton
   }
+
+  const pacienteEditar = id =>  //funcion para el seleccionado del paciente a editar
+  {
+     const pacienteEditar  = pacientes.filter(paciente => paciente.id == id)
+     
+     setPaciente(pacienteEditar[0]);
+  }
+
+  const pacienteEliminar = id => 
+  {
+    //console.log('eliminando', id)
+    Alert.alert(
+      '¿Deseas eliminar este paciente?',
+      'Un paciente eliminado no se puede recuperar',
+      [
+        {text:'Cancelar'},{text:'Si, eliminar', onPress:() => {
+          console.log('eliminando')
+        }}
+      ]
+    )
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style = {styles.titulo}>Administrador de citas
@@ -56,7 +85,19 @@ function App(): JSX.Element {
            Nueva cita
         </Text>
       </Pressable>
-      <Formulario modalVisible= {modalVisible} setModalVisible={setModalVisible} /> 
+
+      {
+        //si la cantidad de pacientes es igual a 0 
+        pacientes.length === 0 ? 
+        <Text style={styles.noPacientes}>No hay pacientes aun.</Text> :
+        <FlatList style={styles.listado} data={pacientes} keyExtractor={(item) => item.id} renderItem={({item}) => { //itera items y muestra esos items
+          return (
+            <Paciente item={item} setModalVisible={setModalVisible} pacienteEditar={pacienteEditar} pacienteEliminar = {pacienteEliminar} />
+          )
+         }} />
+      }
+
+      <Formulario modalVisible= {modalVisible} setModalVisible={setModalVisible}  setPacientes={setPacientes} pacientes={pacientes} pacienteSelected={pacienteSelected} setPaciente={setPaciente} /> 
     </SafeAreaView>
   );
 }
@@ -89,6 +130,16 @@ const styles = StyleSheet.create({
     fontWeight:'900',
     textTransform: 'uppercase',
     fontSize:18
+  },
+  noPacientes:{
+    marginTop:40,
+    textAlign:'center',
+    fontSize:24,
+    fontWeight:'600'
+  },
+  listado:{
+    marginTop:50,
+    marginHorizontal:30
   }
 });
 
