@@ -17,6 +17,7 @@ import {
 //Componentes
 import Formulario from './src/components/Formulario';
 import Paciente from './src/components/Paciente';
+import InformacionPaciente from './src/components/InformacionPaciente';
 
 
 type SectionProps = PropsWithChildren<{
@@ -46,6 +47,8 @@ function App(): JSX.Element {
   const [pacientes, setPacientes] = useState([]);
   //declaramos variable reactiva para el editado del paciente
   const [pacienteSelected, setPaciente] = useState({});
+  //Otro Modal de informacion de paciente
+  const [modalPaciente, setModalPaciente] = useState(false);
 
   const nuevaCitaHandler = () =>
   {
@@ -69,11 +72,18 @@ function App(): JSX.Element {
       'Un paciente eliminado no se puede recuperar',
       [
         {text:'Cancelar'},{text:'Si, eliminar', onPress:() => {
-          console.log('eliminando')
+          //console.log('eliminando')
+          const pacientesActualizado = pacientes.filter(pacientesState => pacientesState.id !== id )
+          setPacientes(pacientesActualizado)
         }}
       ]
     )
   }
+
+  const cerrarModal = () =>  //funcion para cerrar modal del formulario
+  {
+    setModalVisible(false)
+  } 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -92,12 +102,27 @@ function App(): JSX.Element {
         <Text style={styles.noPacientes}>No hay pacientes aun.</Text> :
         <FlatList style={styles.listado} data={pacientes} keyExtractor={(item) => item.id} renderItem={({item}) => { //itera items y muestra esos items
           return (
-            <Paciente item={item} setModalVisible={setModalVisible} pacienteEditar={pacienteEditar} pacienteEliminar = {pacienteEliminar} />
+            <Paciente 
+            item={item}
+            setModalVisible={setModalVisible} 
+            pacienteEditar={pacienteEditar} 
+            pacienteEliminar = {pacienteEliminar} 
+            setModalPaciente = {setModalPaciente}
+            setPaciente = {setPaciente}
+            />
           )
          }} />
       }
 
-      <Formulario modalVisible= {modalVisible} setModalVisible={setModalVisible}  setPacientes={setPacientes} pacientes={pacientes} pacienteSelected={pacienteSelected} setPaciente={setPaciente} /> 
+      {modalVisible && ( //Condicional para montar o desmontar el componente y que no se este poniendo los datos en el form
+         <Formulario 
+         cerrarModal={cerrarModal}
+         setPacientes={setPacientes} 
+         pacientes={pacientes} pacienteSelected={pacienteSelected} setPaciente={setPaciente} /> 
+      )}
+      <Modal visible={modalPaciente} animationType='fade'>
+         <InformacionPaciente paciente={pacienteSelected} setModalPaciente={setModalPaciente} setPaciente={setPaciente}/>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -135,7 +160,8 @@ const styles = StyleSheet.create({
     marginTop:40,
     textAlign:'center',
     fontSize:24,
-    fontWeight:'600'
+    fontWeight:'600',
+    color: '#374151',
   },
   listado:{
     marginTop:50,

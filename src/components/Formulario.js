@@ -3,8 +3,9 @@ import { Modal, Text, SafeAreaView, StyleSheet, TextInput, View, ScrollView,
          Pressable, Alert } from 'react-native'; 
 import DatePicker from 'react-native-date-picker';
 
-const Formulario = ({modalVisible,
-  setModalVisible, 
+const Formulario = ({
+  modalVisible,
+  cerrarModal,
   setPacientes, 
   pacientes, 
   pacienteSelected,
@@ -24,7 +25,7 @@ const Formulario = ({modalVisible,
      if(Object.keys(pacienteSelected).length > 0) //si existe el objeto y tiene valores se colocan sino se dejan vacios
      {
       // console.log('si hay algo')
-      //console.log(pacienteSelected)set
+      //console.log(pacienteSelected)
       setId(pacienteSelected.id)
       setPaciente(pacienteSelected.paciente)
       setPropietario(pacienteSelected.propietario)
@@ -33,7 +34,7 @@ const Formulario = ({modalVisible,
       setFecha(pacienteSelected.fecha)
       setSintomas(pacienteSelected.sintomas)
 
-      setPacienteApp({})
+     
       
      }                   //cada ves que cambia el pacienteSelected, se eejcuta el codigo anterior
    },[pacienteSelected]) //solo se ejecutara una vez y si se le pasa alguna variable reactiva, solo hasta que esta cambie se hara
@@ -81,7 +82,8 @@ const Formulario = ({modalVisible,
       }
 
 
-      setModalVisible(!modalVisible); //una vez agregado el nuevo paciente se cierra el modal
+      //setModalVisible(!modalVisible); //una vez agregado el nuevo paciente se cierra el modal
+      cerrarModal()
 
       //Se setean los valores en vacios nuevamente para el reseteo del formulario
       setPaciente('');
@@ -101,7 +103,7 @@ const Formulario = ({modalVisible,
             </Text> 
 
             <Pressable style={styles.btnCancel} onLongPress={()=>{
-              setModalVisible(!modalVisible)
+              cerrarModal()
 
               setPacienteApp({});   
               setPaciente('');
@@ -134,12 +136,12 @@ const Formulario = ({modalVisible,
             <View style={styles.campo}>
                 <Text style={styles.label}>Fecha De Alta</Text>
                 <View style={styles.fechaContenedor}>
-                   <DatePicker date={fecha} locale='es' mode='date' onDateChange={(date)=>setFecha(date)} />
+                   <DatePicker date={fecha} locale='es' mode='date' textColor='black' onDateChange={(date)=>setFecha(date)} />
                 </View>
             </View>
             <View style={styles.campo}>
                 <Text style={styles.label}>Síntomas</Text>
-                <TextInput  style={[styles.input, styles.inputSintomas]} value={sintomas} onChangeText={setSintomas} placeholder='Síntomas propietario' placeholderTextColor={'#666'} multiline= {true} numberOfLines={4} />
+                <TextInput  style={[styles.input, styles.inputSintomas]} value={sintomas} onChangeText={setSintomas} placeholder='Síntomas paciente' placeholderTextColor={'#666'} multiline= {true} numberOfLines={4} />
             </View>
             <Pressable style={styles.btnNuevaCita} onPress={handleNuevaCita}>
                <Text style={styles.btnNuevaCitaTexto}> {pacienteSelected.id ? 'Editar' : 'Agregar'} paciente</Text>
@@ -188,6 +190,7 @@ const styles = StyleSheet.create({
   },
   input:{
     backgroundColor:'white',
+    color:'black',
     padding:15,
     borderRadius:10,
   },
@@ -204,6 +207,7 @@ const styles = StyleSheet.create({
   fechaContenedor:{
     backgroundColor:'white',
     borderRadius:10,
+    
   },
   btnNuevaCita:{
      marginVertical:50,
