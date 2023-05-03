@@ -9,7 +9,8 @@ const Formulario = ({
   setPacientes, 
   pacientes, 
   pacienteSelected,
-  setPaciente:setPacienteApp}) => 
+  setPaciente:setPacienteApp,
+  guardarCitasStorage}) => 
 {
    const [id, setId] = useState('');
    const [paciente, setPaciente] = useState('');
@@ -31,11 +32,8 @@ const Formulario = ({
       setPropietario(pacienteSelected.propietario)
       setEmailPropietario(pacienteSelected.emailPropietario)
       setTelefonoPropietario(pacienteSelected.telefonoPropietario)
-      setFecha(pacienteSelected.fecha)
+      setFecha(new Date(pacienteSelected.fecha))
       setSintomas(pacienteSelected.sintomas)
-
-     
-      
      }                   //cada ves que cambia el pacienteSelected, se eejcuta el codigo anterior
    },[pacienteSelected]) //solo se ejecutara una vez y si se le pasa alguna variable reactiva, solo hasta que esta cambie se hara
 
@@ -73,13 +71,20 @@ const Formulario = ({
           pacienteState.id == nuevoPaciente.id ? nuevoPaciente : pacienteState) //map devuelve un nuevo arrreglo
 
           setPacientes(pacientesActualizados)
+          guardarCitasStorage(JSON.stringify(pacientesActualizados))
       }
       else //Nuevo registro 
       {
          
          nuevoPaciente.id = Date.now() //id temporal ya que no hay valores de bd ya que se necesita para la muestra de pacientes en app
-         setPacientes([...pacientes, nuevoPaciente])  //toma una copia de pacientes y le agrega el nuevo paciente en dado caso de que haya
+         const citasNuevo = [...pacientes, nuevoPaciente]
+         setPacientes(citasNuevo)  //toma una copia de pacientes y le agrega el nuevo paciente en dado caso de que haya
+
+          //Pasar las nuevas citas a storage
+         guardarCitasStorage(JSON.stringify(citasNuevo))
+        
       }
+
 
 
       //setModalVisible(!modalVisible); //una vez agregado el nuevo paciente se cierra el modal

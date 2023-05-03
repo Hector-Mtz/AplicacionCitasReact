@@ -1,5 +1,5 @@
 import React from 'react';
-import {PropsWithChildren, Fragment, useState} from 'react';
+import {PropsWithChildren, Fragment, useState, useEffect} from 'react';
 import {
   SafeAreaView,
   Text,
@@ -18,7 +18,7 @@ import {
 import Formulario from './src/components/Formulario';
 import Paciente from './src/components/Paciente';
 import InformacionPaciente from './src/components/InformacionPaciente';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -40,7 +40,6 @@ type SectionProps = PropsWithChildren<{
 */
 
 function App(): JSX.Element {
-
   //Los hooks se colocan en la parte superior antes de los componentes
   const [modalVisible, setModalVisible] = useState(false); //es como una variable reactive
   //se necesita un state para mostrar los clientes
@@ -49,6 +48,26 @@ function App(): JSX.Element {
   const [pacienteSelected, setPaciente] = useState({});
   //Otro Modal de informacion de paciente
   const [modalPaciente, setModalPaciente] = useState(false);
+
+  useEffect(() => 
+  {
+     const obtenerCitasStorage = async () => 
+     {
+       try 
+       {
+         const citasStorage = await AsyncStorage.getItem('citas')
+        // console.log(new Date())
+         //console.log(citasStorage);  //recuperamos las citas de Storage
+         setPacientes(JSON.parse(citasStorage))
+       }
+       catch (error) 
+       {
+        console.log(error)
+       }
+     }
+
+     obtenerCitasStorage()
+  },[])
 
   const nuevaCitaHandler = () =>
   {
@@ -75,6 +94,7 @@ function App(): JSX.Element {
           //console.log('eliminando')
           const pacientesActualizado = pacientes.filter(pacientesState => pacientesState.id !== id )
           setPacientes(pacientesActualizado)
+          guardarCitasStorage(JSON.stringify(pacientesActualizado))
         }}
       ]
     )
@@ -84,6 +104,17 @@ function App(): JSX.Element {
   {
     setModalVisible(false)
   } 
+
+  //Alacenar las citas en storage
+  const guardarCitasStorage = async (citasJSON) =>  //hay que convertir antes  a string para que se almacene ya que el storage solo guarda asi
+  {
+     try {
+      await AsyncStorage.setItem('citas', citasJSON);
+      
+     } catch (error) {
+      console.log(error)
+     }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -118,7 +149,10 @@ function App(): JSX.Element {
          <Formulario 
          cerrarModal={cerrarModal}
          setPacientes={setPacientes} 
-         pacientes={pacientes} pacienteSelected={pacienteSelected} setPaciente={setPaciente} /> 
+         pacientes={pacientes} 
+         pacienteSelected={pacienteSelected} 
+         setPaciente={setPaciente}
+         guardarCitasStorage = {guardarCitasStorage} /> 
       )}
       <Modal visible={modalPaciente} animationType='fade'>
          <InformacionPaciente paciente={pacienteSelected} setModalPaciente={setModalPaciente} setPaciente={setPaciente}/>
