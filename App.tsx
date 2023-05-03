@@ -58,7 +58,14 @@ function App(): JSX.Element {
          const citasStorage = await AsyncStorage.getItem('citas')
         // console.log(new Date())
          //console.log(citasStorage);  //recuperamos las citas de Storage
-         setPacientes(JSON.parse(citasStorage))
+         if(citasStorage)
+         {
+          setPacientes(JSON.parse(citasStorage))
+         }
+         else{
+          setPacientes([])
+         }
+         
        }
        catch (error) 
        {
